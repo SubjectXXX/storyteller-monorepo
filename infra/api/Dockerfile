@@ -84,6 +84,13 @@ RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framewor
 # every container start, then exec's the original CMD.
 COPY infra/api/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
+# Strip Windows CRLF line endings if the file was checked out on a
+# Windows host (breaks bash's shebang parsing — manifests as
+# "exec /usr/local/bin/entrypoint.sh: no such file or directory").
+# tr -d '\r' is a POSIX-safe single-byte delete; sed -i is GNU-only.
+RUN tr -d '\r' < /usr/local/bin/entrypoint.sh > /tmp/ep.sh \
+    && mv /tmp/ep.sh /usr/local/bin/entrypoint.sh \
+    && chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 8080
 
@@ -91,6 +98,7 @@ USER www-data
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
+
 
 
 

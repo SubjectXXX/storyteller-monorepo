@@ -1,0 +1,19 @@
+# Force LF line endings for all shell scripts regardless of host OS.
+# Without this, Windows clones via core.autocrlf=true convert LF to CRLF
+# on checkout, which breaks bash's shebang parsing ("exec ...: no such
+# file or directory" — bash misinterprets CR as part of the shebang).
+*.sh             text eol=lf
+*.bash           text eol=lf
+infra/**/entrypoint.sh  text eol=lf
+
+# Source code defaults (let git auto-detect; CRLF for Windows-native files)
+# but force LF for shell and config files
+Dockerfile       text eol=lf
+*.yml            text eol=lf
+*.yaml           text eol=lf
+*.json           text eol=lf
+*.md             text eol=lf
+
+# Allow these to keep platform-native endings
+*.bat            text eol=crlf
+*.ps1            text eol=crlf
