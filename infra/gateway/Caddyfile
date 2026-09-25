@@ -1,0 +1,93 @@
+# Storyteller Caddy gateway.
+#
+# Local dev URL: http://storyteller.test
+# Hostnames:    api.storyteller.test, web.storyteller.test,
+#               admin.storyteller.test, reverb.storyteller.test,
+#               minio.storyteller.test, mail.storyteller.test
+#
+# /etc/hosts on the host operator machine should contain:
+#   127.0.0.1 storyteller.test api.storyteller.test web.storyteller.test
+#   127.0.0.1 admin.storyteller.test reverb.storyteller.test
+#   127.0.0.1 minio.storyteller.test mail.storyteller.test
+# OR set up a local DNS resolver (e.g. dnsmasq) pointing the wildcard
+# to 127.0.0.1.
+
+{
+    auto_https off
+    admin off
+}
+
+(common) {
+    encode zstd gzip
+    header {
+        # Strict defaults that we override per-route where necessary.
+        Strict-Transport-Security "max-age=63072000"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "no-referrer"
+        # Force revalidation on every request — prevents stale SPA shell HTML
+        # (and stale bundle references inside it) from being served from cache
+        # after we rebuild the gateway or change routing rules.  Dev-mode: leave
+        # strict on for /assets/* too — the hash in the filename already makes
+        # the URL a content-addressed cache buster, so cacheability offers no
+        # meaningful perf win for local dev.
+        Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+        Pragma "no-cache"
+        Expires "0"
+        -Vary
+        # Belt-and-suspenders: on every response, tell the browser to evict
+        # any cached entry for this origin.  no-store alone prevents NEW
+        # caching but does not evict EXISTING stale entries, so a user who
+        # loaded /web/ before handle_path /web/* landed would otherwise keep
+        # seeing the old admin HTML.  Clear-Site-Data fires on the next
+        # server-touched response and wipes the HTTP cache for localhost:8088
+        # (or storyteller.test).  Once evicted, no-store keeps it evicted.
+        Clear-Site-Data "\"cache\""
+    }
+}
+
+http:// {
+    import common
+
+    # ---- Bare-prefix redirects for SPA roots.
+    # handle_path /web/* only matches paths WITH something after /web/
+    # (i.e. /web/anything).  A request to /web (no trailing slash) falls
+    # through to the admin catch-all below and serves the admin SPA,
+    # whose bundle (basename="/admin") refuses to match /web.  308 keeps
+    # the method + body so a POST is preserved, and the trailing slash
+    # is canonical for directory-shaped resources.
+    redir /web  /web/  308
+    redir /admin /admin/ 308
+
+    # ---- API: stateless PHP-FPM via Laravel artisan serve (S0 stand-in).
+    reverse_proxy /api/* http://api:8080
+    reverse_proxy /up   http://api:8080
+    reverse_proxy /health/* http://api:8080
+
+    # ---- Web (player SPA)
+    # handle_path /web/* matches requests under /web/ and strips the
+    # /web prefix before passing to the inner handler. reverse_proxy
+    # sees /assets/... and serve -s dist then returns the actual file
+    # (not the SPA-fallback index.html).
+    handle_path /web/* {
+        reverse_proxy http://web:8080
+    }
+
+    # ---- Admin SPA (same strip-prefix trick as web — admin's index.html
+    # references /admin/assets/... but serve -s dist sees only what is
+    # inside dist/, so the gateway strips /admin/.)
+    handle_path /admin/* {
+        reverse_proxy http://admin:8080
+    }
+
+    # ---- Reverb (private websockets)
+    reverse_proxy /reverb/* http://reverb:8080
+
+    # ---- Object storage public surface (MinIO console)
+    reverse_proxy /storage/* http://minio:9000
+
+    # ---- Mailpit web UI
+    reverse_proxy /mail/* http://mailpit:8025
+
+    # ---- Default fallback: serve the admin SPA so a wildcard hits a useful page
+    reverse_proxy /* http://admin:8080
+}

@@ -1,0 +1,10 @@
+node_modules
+dist
+*.tsbuildinfo
+.oxlintrc.cache
+.vitest
+.vitest-cache
+coverage
+.DS_Store
+.idea
+.vscode

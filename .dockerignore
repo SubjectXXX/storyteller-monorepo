@@ -1,0 +1,26 @@
+# Storyteller .dockerignore
+#
+# Build contexts for compose: ., ./infra/api (LARAVEL_ENV_FILE context).
+# Excluding node_modules at the context level keeps the COPY lean and
+# sidesteps Docker's symlink-outside-context validation that breaks on
+# `packages/design-system/node_modules/.bin/esbuild`.
+
+**/node_modules
+**/vendor
+**/.git
+**/.gitignore
+**/.kilo
+**/.vite
+**/dist
+**/build
+**/coverage
+**/.cache
+**/.next
+
+# Agent scratch
+**/__test*
+**/tmp-vitest*
+
+# Docker artefacts (don't recurse into them again)
+**/Dockerfile
+**/.dockerignore

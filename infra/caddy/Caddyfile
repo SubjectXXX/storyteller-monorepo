@@ -1,0 +1,57 @@
+# Storyteller Caddy gateway.
+#
+# Local dev URL: http://storyteller.test
+# Hostnames:    api.storyteller.test, web.storyteller.test,
+#               admin.storyteller.test, reverb.storyteller.test,
+#               minio.storyteller.test, mail.storyteller.test
+#
+# /etc/hosts on the host operator machine should contain:
+#   127.0.0.1 storyteller.test api.storyteller.test web.storyteller.test
+#   127.0.0.1 admin.storyteller.test reverb.storyteller.test
+#   127.0.0.1 minio.storyteller.test mail.storyteller.test
+# OR set up a local DNS resolver (e.g. dnsmasq) pointing the wildcard
+# to 127.0.0.1.
+
+{
+    auto_https off
+    admin off
+}
+
+(common) {
+    encode zstd gzip
+    header {
+        # Strict defaults that we override per-route where necessary.
+        Strict-Transport-Security "max-age=63072000"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "no-referrer"
+    }
+}
+
+http:// {
+    import common
+
+    # ---- API: stateless PHP-FPM via Laravel artisan serve (S0 stand-in).
+    reverse_proxy /api/* http://api:8080
+    reverse_proxy /up   http://api:8080
+    reverse_proxy /health/* http://api:8080
+
+    # ---- Web (player SPA)
+    reverse_proxy /web/* http://web:8080
+    reverse_proxy /web http://web:8080
+
+    # ---- Admin SPA
+    reverse_proxy /admin/* http://admin:8080
+    reverse_proxy /admin http://admin:8080
+
+    # ---- Reverb (private websockets)
+    reverse_proxy /reverb/* http://reverb:8080
+
+    # ---- Object storage public surface (MinIO console)
+    reverse_proxy /storage/* http://minio:9000
+
+    # ---- Mailpit web UI
+    reverse_proxy /mail/* http://mailpit:8025
+
+    # ---- Default fallback: serve the admin SPA so a wildcard hits a useful page
+    reverse_proxy /* http://admin:8080
+}

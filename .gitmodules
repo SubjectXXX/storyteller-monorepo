@@ -1,0 +1,12 @@
+[submodule "application/api"]
+	path = application/api
+	url = https://github.com/SubjectXXX/storyteller-api.git
+	branch = development
+[submodule "application/web"]
+	path = application/web
+	url = https://github.com/SubjectXXX/storyteller-web.git
+	branch = development
+[submodule "application/admin"]
+	path = application/admin
+	url = https://github.com/SubjectXXX/storyteller-admin.git
+	branch = development
