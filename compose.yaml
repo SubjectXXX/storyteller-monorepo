@@ -218,7 +218,10 @@ services:
       retries: 5
 
   minio:
-    image: docker.io/minio/minio:latest
+    # Pin to a release tag — :latest triggers 401 on some Docker setups
+    # (anonymous pull rate limiting). If this version becomes EOL, bump to
+    # the latest RELEASE. tag from https://hub.docker.com/r/minio/minio/tags
+    image: docker.io/minio/minio:RELEASE.2024-09-13T20-26-02Z
     container_name: storyteller_minio
     restart: unless-stopped
     command: ["server", "/data", "--console-address", ":9001"]
@@ -274,5 +277,6 @@ volumes:
   caddy_data:
   caddy_config:
   mailpit_data:
+
 
 
