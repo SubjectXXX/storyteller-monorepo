@@ -1,7 +1,7 @@
 [submodule "application/api"]
 	path = application/api
 	url = https://github.com/SubjectXXX/storyteller-api.git
-	branch = development
+	branch = task/local-disk-storage
 [submodule "application/web"]
 	path = application/web
 	url = https://github.com/SubjectXXX/storyteller-web.git

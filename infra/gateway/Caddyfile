@@ -83,7 +83,7 @@ http:// {
     reverse_proxy /reverb/* http://reverb:8080
 
     # ---- Object storage public surface (MinIO console)
-    reverse_proxy /storage/* http://minio:9000
+    reverse_proxy /storage/* http://api:8080
 
     # ---- Mailpit web UI
     reverse_proxy /mail/* http://mailpit:8025
@@ -91,3 +91,4 @@ http:// {
     # ---- Default fallback: serve the admin SPA so a wildcard hits a useful page
     reverse_proxy /* http://admin:8080
 }
+

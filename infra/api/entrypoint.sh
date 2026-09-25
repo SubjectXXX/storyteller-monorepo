@@ -65,6 +65,10 @@ env -0 | {
 cat "$TMP_FILE" > "$ENV_FILE"
 rm -f "$TMP_FILE"
 
+# Ensure the public/storage symlink exists so /storage/{path} URLs work.
+# Safe to run on every start -- storage:link is idempotent.
+su -s /bin/sh www-data -c 'php artisan storage:link' >/dev/null 2>&1 || true
+
 # Clear any prior config cache so changed env vars take effect
 # immediately on the next request, even if the image had been
 # built with `php artisan config:cache`.

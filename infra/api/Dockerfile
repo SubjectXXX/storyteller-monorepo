@@ -68,6 +68,13 @@ COPY ${LARAVEL_ENV_FILE} /app/.env
 # container start without needing sudo.
 RUN chmod 666 /app/.env
 
+# Pre-create the public/storage symlink so /storage/{path} URLs work
+# for the local-disk-backed `s3` disk. We do this with `ln -s` rather
+# than `php artisan storage:link` because the artisan command needs
+# an initialized Laravel env, which isn't available during image build.
+# The entrypoint script also re-runs `storage:link` on every container
+# start so a deleted symlink gets recreated.
+RUN ln -sf /app/storage/app/public /app/public/storage
 WORKDIR /app
 
 RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
@@ -84,4 +91,6 @@ USER www-data
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
+
+
 

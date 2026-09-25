@@ -23,7 +23,7 @@ cd /srv/storyteller
 # Laravel APP_KEY — must be 32 random bytes base64-encoded
 php -r 'echo "APP_KEY=base64:" . base64_encode(random_bytes(32)) . PHP_EOL;'
 
-# DB / Redis / MinIO passwords — generate four strong random passwords
+# DB / Redis passwords -- generate three strong random passwords
 for i in 1 2 3 4; do openssl rand -hex 24; done
 
 # Session + Reverb secrets
@@ -51,7 +51,7 @@ Required edits:
 | `APP_URL` | `https://api.YOUR-DOMAIN` |
 | `DB_PASSWORD` | random from step 2 |
 | `REDIS_PASSWORD` | random from step 2 |
-| `MINIO_ROOT_PASSWORD` | random from step 2 |
+| `FILESYSTEM_DISK` | `s3` (local-backed, see step 10) |
 | `SESSION_SECRET` | output of step 2 |
 | `REVERB_APP_KEY` | output of step 2 |
 | `ADMIN_BOOTSTRAP_PASSWORD` | **capture to password manager** |
@@ -145,7 +145,20 @@ docker exec storyteller_api php artisan tinker --execute='
 Requires SSH to the docker host. Anyone with host SSH + `docker exec` can
 reset. There is **no** in-app self-service password reset in this codebase.
 
-## 10. Submodule updates
+
+## 10. Object storage
+
+Object storage is backed by the **local filesystem**. The `s3` disk in
+`application/api/config/filesystems.php` is a `local`-driver disk rooted
+at `storage/app/public` and served at `${APP_URL}/storage/{path}`.
+The container entrypoint runs `php artisan storage:link` on every start
+so the public symlink is always present.
+
+No MinIO server, no S3 credentials, no AWS account.
+
+To migrate back to a real S3/MinIO backend, see the comment in
+`config/filesystems.php` for the disk definition.
+## 11. Submodule updates
 
 To pick up new commits from a sub-repo's `development` branch:
 
@@ -156,7 +169,7 @@ docker compose build api web admin   # rebuild affected images
 docker compose up -d
 ```
 
-## 11. Backup
+## 12. Backup
 
 Postgres data lives in the named volume `storyteller_postgres_data`. Backup:
 
@@ -166,3 +179,4 @@ docker exec storyteller_postgres pg_dump -U storyteller storyteller | \
 ```
 
 Schedule via cron. Restore: `gunzip | docker exec -i storyteller_postgres psql -U storyteller`.
+
