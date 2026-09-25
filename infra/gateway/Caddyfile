@@ -88,7 +88,10 @@ http:// {
     # ---- Mailpit web UI
     reverse_proxy /mail/* http://mailpit:8025
 
-    # ---- Default fallback: serve the admin SPA so a wildcard hits a useful page
-    reverse_proxy /* http://admin:8080
+    # ---- Root: redirect to the player. Both SPAs are basename-mounted under
+    # /web/ and /admin/, so serving either at / would render an empty
+    # <div id="root"></div> — the router would have no matching route.
+    # Send the user somewhere we know renders.
+    redir / /web/ 308
 }
 
