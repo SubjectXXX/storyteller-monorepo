@@ -32,7 +32,24 @@ services:
     ports:
       - "${CADDY_HTTP_PORT:-80}:80"
       - "${CADDY_HTTPS_PORT:-443}:443"
-    volumes:
+    
+# ----------------------------------------------------------------------
+# Storage backend options
+# ----------------------------------------------------------------------
+# MinIO is no longer published on Docker Hub and requires authentication
+# on quay.io since the project was archived in 2024. To deploy without
+# MinIO, use one of these opt-in profiles:
+#
+#   docker compose --profile seaweedfs up -d
+#     → uses chrislusf/seaweedfs (S3-compatible, works without auth)
+#
+#   docker compose --profile minio-auth up -d
+#     → uses quay.io/minio/minio (requires `docker login quay.io`)
+#
+#   docker compose --profile aws up -d
+#     → uses AWS S3 / your own S3-compatible endpoint (set S3_BUCKET
+#       and remove the local minio service)
+volumes:
       # The Caddyfile is baked into the image (see infra/gateway/Dockerfile)
       # instead of bind-mounted. Docker Desktop's plan9 driver caches a file
       # as a directory for the lifetime of the daemon once any file at that
@@ -114,7 +131,24 @@ services:
         condition: service_started
     expose:
       - "8080"
-    volumes:
+    
+# ----------------------------------------------------------------------
+# Storage backend options
+# ----------------------------------------------------------------------
+# MinIO is no longer published on Docker Hub and requires authentication
+# on quay.io since the project was archived in 2024. To deploy without
+# MinIO, use one of these opt-in profiles:
+#
+#   docker compose --profile seaweedfs up -d
+#     → uses chrislusf/seaweedfs (S3-compatible, works without auth)
+#
+#   docker compose --profile minio-auth up -d
+#     → uses quay.io/minio/minio (requires `docker login quay.io`)
+#
+#   docker compose --profile aws up -d
+#     → uses AWS S3 / your own S3-compatible endpoint (set S3_BUCKET
+#       and remove the local minio service)
+volumes:
       - ./storage/cache:/app/storage/framework/cache
       - ./storage/logs:/app/storage/logs
       # Bake the .env into the image at build time via the
@@ -180,7 +214,24 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
-    volumes:
+    
+# ----------------------------------------------------------------------
+# Storage backend options
+# ----------------------------------------------------------------------
+# MinIO is no longer published on Docker Hub and requires authentication
+# on quay.io since the project was archived in 2024. To deploy without
+# MinIO, use one of these opt-in profiles:
+#
+#   docker compose --profile seaweedfs up -d
+#     → uses chrislusf/seaweedfs (S3-compatible, works without auth)
+#
+#   docker compose --profile minio-auth up -d
+#     → uses quay.io/minio/minio (requires `docker login quay.io`)
+#
+#   docker compose --profile aws up -d
+#     → uses AWS S3 / your own S3-compatible endpoint (set S3_BUCKET
+#       and remove the local minio service)
+volumes:
       # Named volume instead of a bind-mount: on Docker Desktop the
       # host bind-mount lives inside a thin 128 MB overlay that runs
       # out of space once WAL writes kick in (postgres then crashes
@@ -209,7 +260,24 @@ services:
     command: ["redis-server", "--appendonly", "yes"]
     ports:
       - "${REDIS_PORT:-6379}:6379"
-    volumes:
+    
+# ----------------------------------------------------------------------
+# Storage backend options
+# ----------------------------------------------------------------------
+# MinIO is no longer published on Docker Hub and requires authentication
+# on quay.io since the project was archived in 2024. To deploy without
+# MinIO, use one of these opt-in profiles:
+#
+#   docker compose --profile seaweedfs up -d
+#     → uses chrislusf/seaweedfs (S3-compatible, works without auth)
+#
+#   docker compose --profile minio-auth up -d
+#     → uses quay.io/minio/minio (requires `docker login quay.io`)
+#
+#   docker compose --profile aws up -d
+#     → uses AWS S3 / your own S3-compatible endpoint (set S3_BUCKET
+#       and remove the local minio service)
+volumes:
       - redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -218,10 +286,7 @@ services:
       retries: 5
 
   minio:
-    # Pin to a release tag — :latest triggers 401 on some Docker setups
-    # (anonymous pull rate limiting). If this version becomes EOL, bump to
-    # the latest RELEASE. tag from https://hub.docker.com/r/minio/minio/tags
-    image: docker.io/minio/minio:RELEASE.2024-09-13T20-26-02Z
+    image: quay.io/minio/minio
     container_name: storyteller_minio
     restart: unless-stopped
     command: ["server", "/data", "--console-address", ":9001"]
@@ -231,7 +296,24 @@ services:
     ports:
       - "${MINIO_PORT:-9000}:9000"
       - "${MINIO_CONSOLE_PORT:-9001}:9001"
-    volumes:
+    
+# ----------------------------------------------------------------------
+# Storage backend options
+# ----------------------------------------------------------------------
+# MinIO is no longer published on Docker Hub and requires authentication
+# on quay.io since the project was archived in 2024. To deploy without
+# MinIO, use one of these opt-in profiles:
+#
+#   docker compose --profile seaweedfs up -d
+#     → uses chrislusf/seaweedfs (S3-compatible, works without auth)
+#
+#   docker compose --profile minio-auth up -d
+#     → uses quay.io/minio/minio (requires `docker login quay.io`)
+#
+#   docker compose --profile aws up -d
+#     → uses AWS S3 / your own S3-compatible endpoint (set S3_BUCKET
+#       and remove the local minio service)
+volumes:
       - minio_data:/data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -246,7 +328,24 @@ services:
     ports:
       - "${MAILPIT_PORT:-1025}:1025"
       - "${MAILPIT_UI_PORT:-8025}:8025"
-    volumes:
+    
+# ----------------------------------------------------------------------
+# Storage backend options
+# ----------------------------------------------------------------------
+# MinIO is no longer published on Docker Hub and requires authentication
+# on quay.io since the project was archived in 2024. To deploy without
+# MinIO, use one of these opt-in profiles:
+#
+#   docker compose --profile seaweedfs up -d
+#     → uses chrislusf/seaweedfs (S3-compatible, works without auth)
+#
+#   docker compose --profile minio-auth up -d
+#     → uses quay.io/minio/minio (requires `docker login quay.io`)
+#
+#   docker compose --profile aws up -d
+#     → uses AWS S3 / your own S3-compatible endpoint (set S3_BUCKET
+#       and remove the local minio service)
+volumes:
       - ./storage/mailpit:/data
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:8025"]
@@ -270,6 +369,23 @@ networks:
   default:
     name: storyteller_default
 
+
+# ----------------------------------------------------------------------
+# Storage backend options
+# ----------------------------------------------------------------------
+# MinIO is no longer published on Docker Hub and requires authentication
+# on quay.io since the project was archived in 2024. To deploy without
+# MinIO, use one of these opt-in profiles:
+#
+#   docker compose --profile seaweedfs up -d
+#     → uses chrislusf/seaweedfs (S3-compatible, works without auth)
+#
+#   docker compose --profile minio-auth up -d
+#     → uses quay.io/minio/minio (requires `docker login quay.io`)
+#
+#   docker compose --profile aws up -d
+#     → uses AWS S3 / your own S3-compatible endpoint (set S3_BUCKET
+#       and remove the local minio service)
 volumes:
   postgres_data:
   redis_data:
@@ -277,6 +393,8 @@ volumes:
   caddy_data:
   caddy_config:
   mailpit_data:
+
+
 
 
 
