@@ -67,7 +67,7 @@ services:
         # per-app repo; for a real build pass `--build-arg LARAVEL_ENV_FILE=.env`
         # so the compose-time .env is included instead. See
         # infra/api/Dockerfile and the platform repo's scripts/build.sh.
-        LARAVEL_ENV_FILE: ./application/api/.env
+        LARAVEL_ENV_FILE: ./application/api/.env.example
     image: storyteller-api
     container_name: storyteller_api
     restart: unless-stopped
@@ -274,3 +274,4 @@ volumes:
   caddy_data:
   caddy_config:
   mailpit_data:
+
