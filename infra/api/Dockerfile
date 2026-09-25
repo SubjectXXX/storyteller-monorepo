@@ -20,7 +20,7 @@
 
 ARG PHP_VERSION=8.4
 ARG COMPOSER_VERSION=2
-ARG LARAVEL_ENV_FILE=./application/api/.env
+ARG LARAVEL_ENV_FILE=./application/api/.env.example
 
 FROM docker.io/library/composer:${COMPOSER_VERSION} AS vendor
 
@@ -61,7 +61,7 @@ RUN rm -f /app/bootstrap/cache/services.php /app/bootstrap/cache/packages.php
 # in the per-app repo (intentionally tiny so it can't accidentally
 # carry secrets). For a real local build, pass `--build-arg
 # LARAVEL_ENV_FILE=.env` to bake the compose-time .env instead.
-ARG LARAVEL_ENV_FILE=./application/api/.env
+ARG LARAVEL_ENV_FILE=./application/api/.env.example
 COPY ${LARAVEL_ENV_FILE} /app/.env
 # Make the baked .env world-writable so the entrypoint script (which
 # runs as www-data after `USER www-data`) can overwrite it on every
@@ -84,3 +84,4 @@ USER www-data
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
+
