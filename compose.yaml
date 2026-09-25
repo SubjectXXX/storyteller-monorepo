@@ -218,7 +218,7 @@ services:
       retries: 5
 
   minio:
-    image: quay.io/minio/minio:latest
+    image: docker.io/minio/minio:latest
     container_name: storyteller_minio
     restart: unless-stopped
     command: ["server", "/data", "--console-address", ":9001"]
@@ -274,4 +274,5 @@ volumes:
   caddy_data:
   caddy_config:
   mailpit_data:
+
 
