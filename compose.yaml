@@ -57,8 +57,16 @@ services:
       SESSION_DRIVER: database
       QUEUE_CONNECTION: database
       BROADCAST_CONNECTION: log
+      # Mailpit is the local SMTP sink. MAIL_MAILER has to be set
+      # explicitly: config/mail.php falls back to 'log' when it is absent,
+      # so with only MAIL_HOST/MAIL_PORT set nothing is ever delivered.
+      # The admin user-invite flow emails a generated or operator-set
+      # password through this.
+      MAIL_MAILER: smtp
       MAIL_HOST: mailpit
       MAIL_PORT: '1025'
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-no-reply@storyteller.test}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-Storyteller}
       REVERB_HOST: reverb
       REVERB_PORT: '8080'
     depends_on:
